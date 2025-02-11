@@ -17,6 +17,9 @@ class GeneticAlgorithm:
         self.iteration_number = iteration_number
 
     def initialize_population(self):
+        """
+        This should initialize the first population into random numbers between user-defined upper and lower bound. 
+        """
         population = np.random.uniform(self.population_lower_bound, self.population_upper_bound, (self.population_size, self.vector_length))
         return population
 
@@ -39,6 +42,7 @@ class GeneticAlgorithm:
             fitness_value = fitness_value + temp_sum
             temp_sum += fitness_value
 
+        #Roulette wheel selection
         for idx in np.shape(next_population):
             random_float = np.random.random()
             for fitness in selection_vector:
@@ -49,7 +53,6 @@ class GeneticAlgorithm:
         self.population = next_population
 
     def evaluate(self, vector):
-        #I messed up, re-evaulate what you understand about the objective function
         result = 0
         variable_index = np.arange(len(self.eval_function)-1) #leaves out last element which is constant
         for term in variable_index:
@@ -59,18 +62,22 @@ class GeneticAlgorithm:
         return result
 
     def crossover_selection(self):
+        #inner function actually crosses chromosomes
         def crossover(idx, paired_index):
             vector1 = self.population[idx]
             vector2 = self.population[paired_index]
+            #Randomly determine crossover point, this may chance
             crossover_point = np.random.randint(0, np.shape(vector1)[0])
+            #TODO Check slicing
             parent1 = np.concatenate((vector1[0:crossover_point], vector2[crossover_point:]))
             parent2 = np.concatenate((vector2[0:crossover_point], vector1[crossover_point:]))
 
             self.population[idx] = parent1
             self.population[paired_index] = parent2
-
+        #Driver
         crossover_counter = 0
         paired_index = 0
+        #Determines pairs for crossover
         for idx in np.arange(0, np.shape(self.population)[0]):
             crossover_chance = np.random.random()
             if(crossover_chance < self.crossover_probability):
@@ -82,7 +89,9 @@ class GeneticAlgorithm:
 
     
     def mutation(self):
+        #Inner function actual mutate
         def mutate(population_index):
+            #Right now, evaluates each chromosome randomly for mutation then selects a chromosome at random for mutation
             random_gene = np.random.randint(0, np.shape(self.population[population_index])[0])
             self.population[population_index][random_gene] = self.population[population_index][random_gene] + (np.random.random()*self.mutation_increment)
 
@@ -91,6 +100,7 @@ class GeneticAlgorithm:
             if(mutation_chance < self.mutation_probability):
                 mutate(idx)
 
+    #Driver
     def predict(self):
         iterations = 0
         while iterations < self.iteration_number:
@@ -109,6 +119,7 @@ fifth_term = [1, 2]
 constant = 0
 test_vector = [1, 2, 3, 4, 5]
 
+#Test and driver class here
 eval_function = [first_term, second_term, third_term, fourth_term, fifth_term, constant]
 prediction = GeneticAlgorithm(eval_function)
 print(prediction.evaluate(test_vector))
